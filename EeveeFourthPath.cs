@@ -181,7 +181,7 @@ public class Vaporeon : UpgradePlusPlus<VaporeonPath>
     {
 
         var attackModel = towerModel.GetAttackModel();
-
+        towerModel.areaTypes = Game.instance.model.GetTowerFromId("PatFusty").areaTypes;
         attackModel.weapons[0].projectile = Game.instance.model.GetTowerFromId("MonkeyAce-003").GetAttackModel().weapons[1].projectile.Duplicate();
         foreach (var damageModel in towerModel.GetDescendants<DamageModel>().ToArray())
         {
