@@ -13,6 +13,11 @@ using Il2CppAssets.Scripts.Models.Towers.Behaviors.Attack;
 using Il2CppAssets.Scripts.Unity;
 using Il2CppAssets.Scripts.Models.Towers.Behaviors.Abilities;
 using Il2CppAssets.Scripts.Models.Towers.Behaviors.Attack.Behaviors;
+using BTD_Mod_Helper.Api.ModOptions;
+using Il2CppTMPro;
+using Il2CppAssets.Scripts.Models.SimulationBehaviors;
+using Il2CppAssets.Scripts.Models.Towers.Behaviors;
+using Il2CppAssets.Scripts.Simulation.Towers.Behaviors;
 
 [assembly: MelonInfo(typeof(EeveeFourthPath.EeveeFourthPath), EeveeFourthPath.ModHelperData.Name, EeveeFourthPath.ModHelperData.Version, EeveeFourthPath.ModHelperData.RepoOwner)]
 [assembly: MelonGame("Ninja Kiwi", "BloonsTD6")]
@@ -25,6 +30,12 @@ public class EeveeFourthPath : BloonsTD6Mod
     {
         ModHelper.Msg<EeveeFourthPath>("EeveeFourthPath loaded!");
     }
+    public static readonly ModSettingCategory VeePatches = new("Patches")
+    {
+        collapsed = true
+    };
+    public static readonly ModSettingBool baseEeveeNerf = false;
+    public static readonly ModSettingBool flareonNerf = false;
 }
 public class SylveonPath : PathPlusPlus
 {
@@ -179,20 +190,22 @@ public class Vaporeon : UpgradePlusPlus<VaporeonPath>
 
     public override void ApplyUpgrade(TowerModel towerModel)
     {
-
         var attackModel = towerModel.GetAttackModel();
+        var oldProjectile = attackModel.weapons[0].projectile;
         towerModel.areaTypes = Game.instance.model.GetTowerFromId("PatFusty").areaTypes;
-        attackModel.weapons[0].projectile = Game.instance.model.GetTowerFromId("MonkeyAce-003").GetAttackModel().weapons[1].projectile.Duplicate();
-        foreach (var damageModel in towerModel.GetDescendants<DamageModel>().ToArray())
+        //attackModel.weapons[0].projectile = Game.instance.model.GetTowerFromId("MonkeyAce-003").GetAttackModel().weapons[0].projectile.Duplicate();
+
+        attackModel.weapons[0].projectile = Game.instance.model.GetTowerFromId("MonkeySub").GetWeapons()[0].projectile.Duplicate();
+        foreach (var attackModel2 in towerModel.GetDescendants<AttackModel>().ToArray())
         {
-            attackModel.AddBehavior(new TargetFirstSharedRangeModel("TargetFirstShared", false, true, false, true));
-            attackModel.AddBehavior(new TargetLastSharedRangeModel("TargetLastShared", false, true, false, true));
-            attackModel.AddBehavior(new TargetCloseSharedRangeModel("TargetCloseShared", false, true, false, true));
-            attackModel.AddBehavior(new TargetStrongSharedRangeModel("TargetStrongShared", false, true, false, true));
+            attackModel2.AddBehavior(new TargetFirstSharedRangeModel("TargetFirstShared", false, true, false, true));
+            attackModel2.AddBehavior(new TargetLastSharedRangeModel("TargetLastShared", false, true, false, true));
+            attackModel2.AddBehavior(new TargetCloseSharedRangeModel("TargetCloseShared", false, true, false, true));
+            attackModel2.AddBehavior(new TargetStrongSharedRangeModel("TargetStrongShared", false, true, false, true));
         }
         foreach (var projectileModel in towerModel.GetDescendants<ProjectileModel>().ToArray())
         {
-            projectileModel.pierce += 8;
+            projectileModel.pierce = 16;
             //projectileModel.AddBehavior<DamageModifierForTagModel>(new DamageModifierForTagModel("DamageModifierForTagModel_Projectile", "Moabs", 1.0f, 3.0f, false, false));
             if (!(towerModel.GetUpgradeLevel(0) >= 3)) //Is NOT Jolteon
             {
@@ -201,11 +214,36 @@ public class Vaporeon : UpgradePlusPlus<VaporeonPath>
         }
         foreach (var travelStraitModel in towerModel.GetDescendants<TravelStraitModel>().ToArray())
         {
-            travelStraitModel.Lifespan *= 2f;
+            travelStraitModel.Lifespan *= 4f;
             travelStraitModel.lifespan = travelStraitModel.Lifespan;
             travelStraitModel.lifespanFrames = (int)(travelStraitModel.Lifespan * 60);
         }
         towerModel.AddBehavior(Game.instance.model.GetTowerFromId("SuperMonkey-003").GetBehavior<AbilityModel>().Duplicate());
+
+        if (IsHighestUpgrade(towerModel))
+        {
+            // apply a custom display, if you want
+        }
+    }
+}
+public class AcidArmor : UpgradePlusPlus<VaporeonPath>
+{
+    public override int Cost => 5000;
+    public override int Tier => 4;
+    public override string Icon => VanillaSprites.LotsMoreDartsUpgradeIcon;
+
+    public override string Description => "Adds Submerge targeting option that produce 3 lives per round and coats nearby Bloons in acid. Vaporeon does not use its main attack while submerged.";
+
+    public override void ApplyUpgrade(TowerModel towerModel)
+    {
+        //Shield
+        //new ShieldPerRoundModel("ShieldPerRoundModel_", 3);
+
+        towerModel.AddBehavior<SubmergeModel>(Game.instance.model.GetTowerFromId("MonkeySub-300").GetBehavior<SubmergeModel>().Duplicate());
+        towerModel.GetBehavior<SubmergeModel>().submergeAttackModel.GetDescendant<ProjectileModel>().RemoveBehavior<RemoveBloonModifiersModel>();
+        towerModel.GetBehavior<SubmergeModel>().submergeAttackModel.GetDescendant<ProjectileModel>().AddBehavior(Game.instance.model.GetTowerFromId("Alchemist").GetWeapons()[0].projectile.GetBehavior<AddBehaviorToBloonModel>());
+        //BonusLivesPerRound RemoveBloonModifiersModel
+        //    AddBehaviorToBloonModel
 
         if (IsHighestUpgrade(towerModel))
         {
