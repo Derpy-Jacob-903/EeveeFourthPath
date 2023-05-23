@@ -11,10 +11,6 @@
     </PropertyGroup>
 
     <Import Project="..\btd6.targets" />
-
-    <ItemGroup>
-      <Compile Remove="Eevee.cs" />
-    </ItemGroup>
 	<ItemGroup>
 		<Reference Include="PathsPlusPlus">
 			<HintPath>$(BloonsTD6)\Mods\PathsPlusPlus.dll</HintPath>

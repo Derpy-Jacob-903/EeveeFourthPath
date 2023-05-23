@@ -14,10 +14,7 @@ using Il2CppAssets.Scripts.Unity;
 using Il2CppAssets.Scripts.Models.Towers.Behaviors.Abilities;
 using Il2CppAssets.Scripts.Models.Towers.Behaviors.Attack.Behaviors;
 using BTD_Mod_Helper.Api.ModOptions;
-using Il2CppTMPro;
-using Il2CppAssets.Scripts.Models.SimulationBehaviors;
 using Il2CppAssets.Scripts.Models.Towers.Behaviors;
-using Il2CppAssets.Scripts.Simulation.Towers.Behaviors;
 
 [assembly: MelonInfo(typeof(EeveeFourthPath.EeveeFourthPath), EeveeFourthPath.ModHelperData.Name, EeveeFourthPath.ModHelperData.Version, EeveeFourthPath.ModHelperData.RepoOwner)]
 [assembly: MelonGame("Ninja Kiwi", "BloonsTD6")]
@@ -47,7 +44,7 @@ public class VaporeonPath : PathPlusPlus
 {
     public override string Tower => "Eevee-Eevee";
 
-    public override int UpgradeCount => 3; // Increase this up to 5 as you create your Upgrades
+    public override int UpgradeCount => 4; // Increase this up to 5 as you create your Upgrades
 }
 public class ExtraPins : UpgradePlusPlus<SylveonPath>
 {
@@ -150,7 +147,7 @@ public class LongRangePins : UpgradePlusPlus<VaporeonPath>
         }
     }
 }
-public class PinRicochet : UpgradePlusPlus<VaporeonPath>
+public class PinRicochetOld : UpgradePlusPlus<VaporeonPath>
 {
     public override int Cost => 300;
     public override int Tier => 2;
@@ -195,7 +192,7 @@ public class Vaporeon : UpgradePlusPlus<VaporeonPath>
         towerModel.areaTypes = Game.instance.model.GetTowerFromId("PatFusty").areaTypes;
         //attackModel.weapons[0].projectile = Game.instance.model.GetTowerFromId("MonkeyAce-003").GetAttackModel().weapons[0].projectile.Duplicate();
 
-        attackModel.weapons[0].projectile = Game.instance.model.GetTowerFromId("MonkeySub").GetWeapons()[0].projectile.Duplicate();
+        attackModel.weapons[0].projectile = Game.instance.model.GetTowerFromId("MonkeySub-300").GetWeapons()[0].projectile.Duplicate();
         foreach (var attackModel2 in towerModel.GetDescendants<AttackModel>().ToArray())
         {
             attackModel2.AddBehavior(new TargetFirstSharedRangeModel("TargetFirstShared", false, true, false, true));
@@ -239,9 +236,12 @@ public class AcidArmor : UpgradePlusPlus<VaporeonPath>
         //Shield
         //new ShieldPerRoundModel("ShieldPerRoundModel_", 3);
 
+        towerModel.TargetTypes = Game.instance.model.GetTowerFromId("MonkeySub-300").TargetTypes.Duplicate();
+        towerModel.TargetTypes = Game.instance.model.GetTowerFromId("MonkeySub-300").TargetTypes.Duplicate();
         towerModel.AddBehavior<SubmergeModel>(Game.instance.model.GetTowerFromId("MonkeySub-300").GetBehavior<SubmergeModel>().Duplicate());
         towerModel.GetBehavior<SubmergeModel>().submergeAttackModel.GetDescendant<ProjectileModel>().RemoveBehavior<RemoveBloonModifiersModel>();
         towerModel.GetBehavior<SubmergeModel>().submergeAttackModel.GetDescendant<ProjectileModel>().AddBehavior(Game.instance.model.GetTowerFromId("Alchemist").GetWeapons()[0].projectile.GetBehavior<AddBehaviorToBloonModel>());
+        towerModel.AddBehavior(new Il2CppAssets.Scripts.Models.Towers.Behaviors.BonusLivesPerRoundModel("BonusLivesPerRoundModel_", 3, 1.25f, Game.instance.model.GetTowerFromId("BananaFarm-005").GetBehavior<BonusLivesPerRoundModel>().assetId));
         //BonusLivesPerRound RemoveBloonModifiersModel
         //    AddBehaviorToBloonModel
 
