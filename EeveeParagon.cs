@@ -32,8 +32,9 @@ using Eevee.Upgrades.MiddlePath;
 using Il2CppAssets.Scripts.Models.GenericBehaviors;
 using Il2CppAssets.Scripts.Models.Towers.TowerFilters;
 using System;
+using MelonLoader.TinyJSON;
 
-namespace Eevee.Upgrades.Pargon
+namespace Eevee.Upgrades.Paragon
 {
 
     public class EeveeModVanillaParagon : ModVanillaParagon
@@ -43,7 +44,7 @@ namespace Eevee.Upgrades.Pargon
     }
     public class EeveeParagon : ModParagonUpgrade<EeveeModVanillaParagon>
     {
-        public override int Cost => 200000;
+        public override int Cost => 000000;
         public override string Description => "Sometimes the hand of fate must be forced...";
         public override string DisplayName => "Eevee Paragon";
         public override string DisplayNamePlural => base.DisplayNamePlural;
@@ -52,8 +53,10 @@ namespace Eevee.Upgrades.Pargon
         {
             var Vee = GetTowerModel<Eevee>(0, 0, 0).Duplicate();
             var Glac = GetTowerModel<Eevee>(2, 0, 5).Duplicate();
+            //var Glac2 = GetTowerModel<Eevee>(2, 0, 3).Duplicate();
 
             Glac.GetDescendants<FilterInvisibleModel>().ForEach(model => model.isActive = false);
+            //Glac2.GetDescendants<FilterInvisibleModel>().ForEach(model => model.isActive = false);
 
             var glaceProjectileModel = towerModel.GetAttackModel().GetDescendant<ProjectileModel>();
 
@@ -62,41 +65,54 @@ namespace Eevee.Upgrades.Pargon
             var Flare = GetTowerModel<Eevee>(0, 5, 0).Duplicate();
             var Mage = Game.instance.model.GetTowerFromId(TowerType.WizardMonkey + "-402").Duplicate();
 
-            towerModel.GetAttackModel().SetWeapon(Glac.GetAttackModel().weapons[0]);
+            towerModel.GetAttackModel().SetWeapon(Flare.GetAttackModel().weapons[0]);
+            towerModel.GetAttackModel().weapons[0].Rate *= 10; // 'Master Of Fire' fires 10 times as fast as 'Inflamed Flareon', which is laggy with all the 'CreateProjectileOnContact' stuff.
+            towerModel.GetAttackModel().weapons[0].Rate *= 0.6f;
+
+            //towerModel.GetAttackModel().AddWeapon(Jolt.GetAttackModel().weapons[1]);
+
+            towerModel.GetAttackModel().AddWeapon(Game.instance.model.GetTowerFromId("Druid-500").GetAttackModel().weapons[2].Duplicate()); //weapons[1]  // Superstorm Ball Lightning
+            //towerModel.GetAttackModel().AddWeapon(Glac.GetAttackModel().weapons[0]); //Icicle Impale
+
+            towerModel.GetAttackModel().AddBehavior(Game.instance.model.GetTowerFromId("IceMonkey-205").GetAttackModel().weapons[0].Duplicate());
+
 
             TowerModel druid = Game.instance.model.GetTowerFromId(TowerType.Druid + "-200");
 
             // Create lightning weapon and increase attack speed
-            WeaponModel lightningWeapon = druid.GetAttackModel().weapons[1].Duplicate();
+            //WeaponModel lightningWeapon = druid.GetAttackModel().weapons[1].Duplicate();
 
             towerModel.GetAttackModel().weapons[0].projectile.display = Mage.GetAttackModel().weapons[0].projectile.display;
 
             foreach (WeaponModel weaponModel in towerModel.GetDescendants<WeaponModel>().ToArray())
             {
-                var balls = weaponModel.projectile.GetBehavior<CreateProjectileOnContactModel>().Duplicate();
+                var balls = Glac.GetAttackModel().weapons[0].projectile.GetBehavior<CreateProjectileOnContactModel>().Duplicate();
                 balls.projectile = Jolt.GetAttackModel().weapons[0].projectile;
                 balls.emission = Jolt.GetAttackModel().weapons[0].emission;
-                //Game.instance.model.GetTowerFromId("IceMonkey-105").GetAttackModel().weapons[0].projectile.GetBehavior<CreateProjectileOnContactModel>().projectile.Duplicate();
 
+                //var IceMonke = Glac.GetAttackModel().weapons[0].projectile.GetBehavior<FreezeModel>().projectile.;
                 //AddBehaviorToBloonModel laserShock = Game.instance.model.GetTowerFromId("Gwendolin 20").GetDescendant<AddBehaviorToBloonModel>().Duplicate();
                 weaponModel.projectile.AddBehavior(balls);
             }
 
-            foreach (WeaponModel weaponModel in towerModel.GetDescendants<WeaponModel>().ToArray())
+            foreach (ProjectileModel projectileModel in towerModel.GetDescendants<ProjectileModel>().ToArray())
             {
-                //weaponModel.projectile.GetDamageModel().damage = 24;
-                //damageModel.damage = 24 + (1 per degree over 20);
-            }
-            foreach (WeaponModel weaponModel in towerModel.GetDescendants<WeaponModel>().ToArray())
-            {
-                foreach (AddBehaviorToBloonModel addBehaviorToBloonModel in Flare.GetDescendants<AddBehaviorToBloonModel>().ToArray())
+                if (!projectileModel.HasBehavior<FreezeModel>())
                 {
-                    //AddBehaviorToBloonModel laserShock = Flare.GetDescendant<AddBehaviorToBloonModel>().Duplicate();
-                    weaponModel.projectile.AddBehavior(addBehaviorToBloonModel);
+                    projectileModel.AddBehavior(Glac.GetAttackModel().weapons[0].projectile.GetBehavior<CreateProjectileOnContactModel>().projectile.GetBehavior<FreezeModel>().Duplicate());
                 }
+            }
+            //foreach (WeaponModel weaponModel in towerModel.GetDescendants<WeaponModel>().ToArray())
+            //{
+            //    foreach (AddBehaviorToBloonModel addBehaviorToBloonModel in Glac.GetDescendants<AddBehaviorToBloonModel>().ToArray())
+            //    {
+                    //AddBehaviorToBloonModel laserShock = Glac.GetDescendant<AddBehaviorToBloonModel>().Duplicate();
+            //        FreezeModel_Ice
+            //        weaponModel.projectile.AddBehavior(addBehaviorToBloonModel);
+            //    }
                 //AddBehaviorToBloonModel laserShock = Flare.GetDescendant<AddBehaviorToBloonModel>().Duplicate();
                 //weaponModel.projectile.AddBehavior(laserShock);
-            }
+            //}
 
             towerModel.GetDescendants<FilterInvisibleModel>().ForEach(model => model.isActive = false);
 
@@ -109,6 +125,8 @@ namespace Eevee.Upgrades.Pargon
             {
                 damageModel.immuneBloonProperties = BloonProperties.None;
             }
+
+
         }
     }
 }
