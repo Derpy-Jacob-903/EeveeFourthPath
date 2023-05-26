@@ -9,6 +9,7 @@ on:
 
 env:
   PROJECT_NAME: EeveeFourthPath
+  PROJECT_NAME_VEE: Eevee
   MELONLOADER_BRANCH: alpha-development
   
   MOD_HELPER_NAME: Btd6ModHelper
@@ -24,6 +25,13 @@ jobs:
         uses: actions/checkout@master
         with:
           path: ${{ env.PROJECT_NAME }}
+      
+      
+      - name: Clone Eevee Repo
+        uses: sudosubin/git-clone-action@v1.0.1
+        with:
+          repository: Allonischmoni/Eevee
+          path: ${{ env.PROJECT_NAME_VEE }}
 
 
       - name: Download Latest MelonLoader
@@ -86,6 +94,16 @@ jobs:
           branch: ${{ env.MOD_HELPER_BRANCH }}
           repo: gurrenm3/BTD-Mod-Helper
           path: ${{ env.BLOONSTD6 }}/Mods/
+          
+      - name: Download PathsPlusPlus
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: build.yml
+          branch: main
+          name: PathsPlusPlus.dll
+          repo: doombubbles/paths-plus-plus
+          path: ${{ env.BLOONSTD6 }}/Mods/
 
 
       - name: Download btd6.targets
@@ -102,6 +120,9 @@ jobs:
         with:
           dotnet-version: 6.0.x # net6 can still build older as well
 
+
+      - name: Build Eevee
+        run: dotnet build -c Release -p:BloonsTD6="../${{ env.BLOONSTD6 }}" "${{ env.PROJECT_NAME_VEE }}/${{ env.PROJECT_NAME_VEE }}.csproj"
 
       - name: Build
         run: dotnet build -c Release -p:BloonsTD6="../${{ env.BLOONSTD6 }}" "${{ env.PROJECT_NAME }}/${{ env.PROJECT_NAME }}.csproj"
