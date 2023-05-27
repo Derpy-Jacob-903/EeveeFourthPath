@@ -101,6 +101,7 @@ public class Sylveon : UpgradePlusPlus<SylveonPath>
     public override string Icon => VanillaSprites.ArmorPiercingDartsUpgradeIcon;
 
     public override string Description => "Evolving Eevee to Sylveon and increases pierce and damage, plus extra damage to MOAB-class Bloons.";
+    public override string Portrait => "700Sylveon_PSMD";
 
     public override void ApplyUpgrade(TowerModel towerModel)
     {

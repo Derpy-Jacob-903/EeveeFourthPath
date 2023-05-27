@@ -50,6 +50,7 @@ namespace Eevee.Upgrades.Paragon
         public override string Description => "Sometimes the hand of fate must be forced...";
         public override string DisplayName => "Eevee Paragon";
         public override string DisplayNamePlural => base.DisplayNamePlural;
+        public override string Portrait => "133Eevee-Female_LG";
 
         public override void ApplyUpgrade(TowerModel towerModel)
         {
