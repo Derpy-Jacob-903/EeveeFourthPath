@@ -33,6 +33,8 @@ using Il2CppAssets.Scripts.Models.GenericBehaviors;
 using Il2CppAssets.Scripts.Models.Towers.TowerFilters;
 using System;
 using MelonLoader.TinyJSON;
+using BTD_Mod_Helper.Api;
+using System.Collections.Generic;
 
 namespace Eevee.Upgrades.Paragon
 {
@@ -88,7 +90,7 @@ namespace Eevee.Upgrades.Paragon
             {
                 var balls = Glac.GetAttackModel().weapons[0].projectile.GetBehavior<CreateProjectileOnContactModel>().Duplicate();
                 balls.projectile = Jolt.GetAttackModel().weapons[0].projectile;
-                balls.emission = Jolt.GetAttackModel().weapons[0].emission;
+                balls.emission = druid.GetAttackModel().weapons[1].emission;
 
                 //var IceMonke = Glac.GetAttackModel().weapons[0].projectile.GetBehavior<FreezeModel>().projectile.;
                 //AddBehaviorToBloonModel laserShock = Game.instance.model.GetTowerFromId("Gwendolin 20").GetDescendant<AddBehaviorToBloonModel>().Duplicate();
@@ -117,6 +119,7 @@ namespace Eevee.Upgrades.Paragon
             towerModel.GetDescendants<FilterInvisibleModel>().ForEach(model => model.isActive = false);
 
             towerModel.range += 60;
+
             foreach (AttackModel attackModel in towerModel.GetDescendants<AttackModel>().ToArray())
             {
                 attackModel.range += 60;
@@ -126,7 +129,80 @@ namespace Eevee.Upgrades.Paragon
                 damageModel.immuneBloonProperties = BloonProperties.None;
             }
 
+            towerModel.ApplyDisplay<EeveeParagonDisplay>();
 
+            foreach (var damageModel in towerModel.GetDescendants<ParagonAssetSwapModel>().ToArray())
+            {
+                towerModel.RemoveBehavior<ParagonAssetSwapModel>(damageModel);
+            }
+            //foreach (var damageModel in towerModel.GetBehavior<ParagonTowerModel>().displayDegreePaths.ToArray())
+            //{
+            //    damageModel.assetPath.guidRef = GetDisplayGUID<EeveeParagonDisplay>();
+            //}
+            //towerModel.GetAttackModel().weapons[0].projectile.ApplyDisplay<ParagonMagicProj>();
+        }
+    }
+    public class EeveeParagonDisplay : ModTowerDisplay<EeveeModVanillaParagon>
+        {
+        public override float Scale => 30f; //+ ParagonDisplayIndex * .025f;  // Higher degree Paragon displays will be bigger
+
+        //public override string BaseDisplay =>  // The floating monkey part of the True Sun God
+        public override string BaseDisplay => GetDisplayGUID<EeveeDisplay>();
+
+        public override bool UseForTower(int[] tiers) => IsParagon(tiers);
+
+        /// <summary>
+        /// All classes that derive from ModContent MUST have a zero argument constructor to work
+        /// </summary>
+        public EeveeParagonDisplay()
+        {
+        }
+
+        public EeveeParagonDisplay(int i)
+        {
+            ParagonDisplayIndex = i;
+        }
+
+        public override int ParagonDisplayIndex { get; }  // Overriding in this way lets us set it in the constructor
+
+        /// <summary>
+        /// Create a display for each possible ParagonDisplayIndex
+        /// </summary>
+        /// <returns></returns>
+        public override IEnumerable<ModContent> Load()
+        {
+            for (var i = 0; i < TotalParagonDisplays; i++)
+            {
+                yield return new EeveeParagonDisplay(i);
+            }
+        }
+
+
+        public override string Name => nameof(EeveeParagonDisplay) + ParagonDisplayIndex;  // make sure each instance has its own name
+
+        /// <summary>
+        /// Could use the ParagonDisplayIndex property to use different effects based on the paragon strength
+        /// </summary>
+        /// <param name="node"></param>
+        public override void ModifyDisplayNode(UnityDisplayNode node)
+        {
+            node.PrintInfo();
+            node.SaveMeshTexture();
+            SetMeshTexture(node, "pm0133_00_Body1");
+            //SetMeshTexture(node, "pm0133_00_Eye1", 1);
+            //SetMeshTexture(node, "pm0133_00_Mouth1", 2);
+        }
+    }
+    public class ParagonMagicProj : ModDisplay
+    {
+
+        public override string BaseDisplay => "7367b996679da4f4a900902bf8d2a76f";
+
+        public override void ModifyDisplayNode(UnityDisplayNode node)
+        {
+            node.PrintInfo();
+            node.SaveMeshTexture();
+            //SetMeshTexture(node, "ArcaneShot");
         }
     }
 }
