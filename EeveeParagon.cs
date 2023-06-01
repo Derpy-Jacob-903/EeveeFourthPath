@@ -35,6 +35,7 @@ using System;
 using MelonLoader.TinyJSON;
 using BTD_Mod_Helper.Api;
 using System.Collections.Generic;
+using Il2CppSystem;
 
 namespace Eevee.Upgrades.Paragon
 {
@@ -46,14 +47,24 @@ namespace Eevee.Upgrades.Paragon
     }
     public class EeveeParagon : ModParagonUpgrade<EeveeModVanillaParagon>
     {
-        public override int Cost => 000000;
+        public override int Cost => 100000;
         public override string Description => "Sometimes the hand of fate must be forced...";
-        public override string DisplayName => "Eevee Paragon";
-        public override string DisplayNamePlural => base.DisplayNamePlural;
+        //public override string DisplayName => "Eevee Paragon";
+        //public override string DisplayNamePlural => "Eevee Paragon";
+        public override string Icon => "";
         public override string Portrait => "133Eevee-Female_LG";
 
         public override void ApplyUpgrade(TowerModel towerModel)
         {
+            /// fix compatablilly w/ balanced_random_towers
+            towerModel.appliedUpgrades = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStringArray(6);
+            towerModel.appliedUpgrades[0] = "Eevee-EeveeSeesEverything";
+            towerModel.appliedUpgrades[1] = "Eevee-StrongEevee";
+            towerModel.appliedUpgrades[2] = "Eevee-Flareon";
+            towerModel.appliedUpgrades[3] = "Eevee-InflamedFlareon";
+            towerModel.appliedUpgrades[4] = "Eevee-MasterOfIce";
+            towerModel.appliedUpgrades[5] = "Eevee-Eevee Paragon";
+
             var Vee = GetTowerModel<Eevee>(0, 0, 0).Duplicate();
             var Glac = GetTowerModel<Eevee>(2, 0, 5).Duplicate();
             //var Glac2 = GetTowerModel<Eevee>(2, 0, 3).Duplicate();
@@ -65,7 +76,8 @@ namespace Eevee.Upgrades.Paragon
 
             var Jolt = GetTowerModel<Eevee>(5, 2, 0).Duplicate();
 
-            var Flare = GetTowerModel<Eevee>(0, 5, 0).Duplicate();
+            var Flare = GetTowerModel<Eevee>(2, 5, 0).Duplicate();
+            var Flare2 = GetTowerModel<Eevee>(0, 5, 0).Duplicate();
             var Mage = Game.instance.model.GetTowerFromId(TowerType.WizardMonkey + "-402").Duplicate();
 
             towerModel.GetAttackModel().SetWeapon(Flare.GetAttackModel().weapons[0]);
@@ -77,8 +89,28 @@ namespace Eevee.Upgrades.Paragon
             towerModel.GetAttackModel().AddWeapon(Game.instance.model.GetTowerFromId("Druid-500").GetAttackModel().weapons[2].Duplicate()); //weapons[1]  // Superstorm Ball Lightning
             //towerModel.GetAttackModel().AddWeapon(Glac.GetAttackModel().weapons[0]); //Icicle Impale
 
-            towerModel.GetAttackModel().AddBehavior(Game.instance.model.GetTowerFromId("IceMonkey-205").GetAttackModel().weapons[0].Duplicate());
-
+            towerModel.GetAttackModel().AddBehavior(Game.instance.model.GetTowerFromId("IceMonkey-205").GetAttackModel().weapons[0].Duplicate()); //Icicle Impale
+            towerModel.GetAttackModel().weapons[1].Rate *= 0.5f;
+            towerModel.AddBehavior(Game.instance.model.GetTowerFromId("MonkeyBuccaneer-Paragon").GetAttackModels().FirstOrDefault(model => model.name == "AttackModel_Grapple1_")); //Navarch of the Seas Passive MOAB Takedown
+            var Slyv = towerModel.GetBehaviors<AttackModel>().FirstOrDefault(model => model.name == "AttackModel_Grapple1_");
+            if (Slyv is not null)
+            {
+                foreach (WeaponModel weaponModel in Slyv.weapons)
+                {
+                    weaponModel.rate = 10;
+                    weaponModel.Rate = 10;
+                };
+                foreach (TargetGrapplableModel targetGrapplableModel in Slyv.GetDescendants<TargetGrapplableModel>().ToArray())
+                {
+                    targetGrapplableModel.hooks = 1;
+                    targetGrapplableModel.zomgHooksRequired = 1;
+                    targetGrapplableModel.badHooksRequired = 4;
+                };
+                foreach (RotateToTargetModel rotateToTargetModel in Slyv.GetDescendants<RotateToTargetModel>().ToArray())
+                {
+                    rotateToTargetModel.additionalRotation = 0;
+                };
+            };
 
             TowerModel druid = Game.instance.model.GetTowerFromId(TowerType.Druid + "-200");
 
@@ -145,7 +177,7 @@ namespace Eevee.Upgrades.Paragon
     }
     public class EeveeParagonDisplay : ModTowerDisplay<EeveeModVanillaParagon>
         {
-        public override float Scale => 30f; //+ ParagonDisplayIndex * .025f;  // Higher degree Paragon displays will be bigger
+        public override float Scale => 25f; //+ ParagonDisplayIndex * .025f;  // Higher degree Paragon displays will be bigger
 
         //public override string BaseDisplay =>  // The floating monkey part of the True Sun God
         public override string BaseDisplay => GetDisplayGUID<EeveeDisplay>();
